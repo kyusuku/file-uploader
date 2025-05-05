@@ -6,6 +6,8 @@ const { PrismaSessionStore } = require("@quixo3/prisma-session-store");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
+const bcrypt = require("bcryptjs");
 
 const app = express();
 app.set("views", path.join(__dirname, "views"));
@@ -29,7 +31,7 @@ app.use(
     }),
   })
 );
-app.use(passport.expressSession());
+app.use(passport.session());
 app.use(express.urlencoded({ extended: false }));
 
 passport.use(
@@ -73,6 +75,12 @@ passport.deserializeUser(async (id, done) => {
   } catch (err) {
     done(err);
   }
+});
+
+app.get("/", (req, res) => {
+  res.render("index", {
+    title: "File Uploader",
+  });
 });
 
 const PORT = process.env.PORT || 3000;

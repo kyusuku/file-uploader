@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/output.css" />
+    <title><%= title %></title>
+  </head>
+  <body>
+    <div class="min-h-dvh flex flex-col bg-gray-300 gap-8">
+      <nav class="flex justify-between items-center bg-white p-6">
+        <h1 class="text-2xl">My Drive</h1>
+        <form action="/log-out" method="GET">
+          <button
+            type="submit"
+            class="bg-blue-500 transition text-white px-2 py-1 rounded-md font-bold hover:bg-blue-600 cursor-pointer"
+          >
+            Log out
+          </button>
+        </form>
+      </nav>
+    </div>
+  </body>
+</html>

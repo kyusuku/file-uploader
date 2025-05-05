@@ -145,6 +145,15 @@ app.get("/home", ensureAuthenticated, async (req, res) => {
   });
 });
 
+app.get("/log-out", (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("/");
+  });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`File Uploader App listening on port ${PORT}!`);

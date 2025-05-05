@@ -8,6 +8,7 @@ const prisma = new PrismaClient();
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
+const { nextTick } = require("node:process");
 
 const app = express();
 app.set("views", path.join(__dirname, "views"));
@@ -37,12 +38,11 @@ app.use(express.urlencoded({ extended: false }));
 passport.use(
   new LocalStrategy(async (username, password, done) => {
     try {
-      const { rows } = await prisma.user.findUnique({
+      const user = await prisma.user.findUnique({
         where: {
           username: `${username}`,
         },
       });
-      const user = rows[0];
 
       if (!user) {
         return done(null, false, { message: "Incorrect username" });
@@ -64,12 +64,11 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const { rows } = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: {
         id: `${id}`,
       },
     });
-    const user = rows[0];
 
     done(null, user);
   } catch (err) {
@@ -79,6 +78,69 @@ passport.deserializeUser(async (id, done) => {
 
 app.get("/", (req, res) => {
   res.render("index", {
+    title: "File Uploader",
+  });
+});
+
+app.get("/sign-up", (req, res) => {
+  res.render("sign-up", {
+    title: "File Uploader",
+  });
+});
+
+app.post("/sign-up", async (req, res) => {
+  try {
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const match = bcrypt.compareSync(req.body.confirmPassword, hashedPassword);
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        username: req.body.username,
+      },
+    });
+
+    if (existingUser) {
+      return res.render("sign-up", {
+        title: "File Uploader",
+        error: "Username is already taken. Please try again.",
+      });
+    }
+
+    if (!match) {
+      return res.render("sign-up", {
+        title: "File Uploader",
+        error: "Your passwords do not match. Please try again.",
+      });
+    }
+    const user = await prisma.user.create({
+      data: {
+        username: req.body.username,
+        password: hashedPassword,
+      },
+    });
+    console.log(user);
+    res.redirect("/");
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+app.post(
+  "/log-in",
+  passport.authenticate("local", {
+    successRedirect: "/home",
+    failureRedirect: "/",
+  })
+);
+
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect("/");
+}
+
+app.get("/home", ensureAuthenticated, async (req, res) => {
+  res.render("home", {
     title: "File Uploader",
   });
 });

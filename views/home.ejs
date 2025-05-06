@@ -8,6 +8,42 @@
   </head>
   <body>
     <div class="min-h-dvh flex flex-col bg-gray-300 gap-8">
+      <% if (locals.newFolder) { %>
+      <div
+        class="fixed inset-0 bg-gray-300 bg-opacity-10 z-40 flex justify-center items-center"
+      >
+        <form
+          action="/<%= parentName ? parentName : 'home' %>/new-folder"
+          method="POST"
+          class="bg-white rounded-md flex flex-col self-center gap-4 p-6"
+        >
+          <div class="flex flex-col">
+            <label for="folderName">Folder Name</label>
+            <input
+              type="text"
+              id="folderName"
+              name="folderName"
+              class="border-gray-600 border-1 rounded-md px-2 py-1"
+            />
+          </div>
+          <div class="flex justify-between items-center">
+            <button
+              type="button"
+              onclick="window.location.href='/<%= parentName ? parentName : 'home' %>';"
+              class="bg-red-500 transition text-white px-2 py-1 rounded-md font-bold hover:bg-red-700 cursor-pointer w-[80px]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="bg-blue-500 transition text-white px-2 py-1 rounded-md font-bold hover:bg-blue-600 cursor-pointer w-[80px]"
+            >
+              Confirm
+            </button>
+          </div>
+        </form>
+      </div>
+      <% } %>
       <nav class="flex justify-between items-center bg-white p-6">
         <h1 class="text-2xl">My Drive</h1>
         <form action="/log-out" method="GET">
@@ -19,6 +55,37 @@
           </button>
         </form>
       </nav>
+      <div class="p-6">
+        <div class="flex justify-between items-center bg-white rounded-md p-6">
+          <h2 class="text-xl">Home /</h2>
+          <div class="flex justify-center items-center gap-4">
+            <button
+              class="bg-blue-500 transition text-white px-2 py-1 rounded-md font-bold hover:bg-blue-600 cursor-pointer"
+            >
+              Upload File
+            </button>
+            <form action="/new-folder" method="GET">
+              <button
+                class="bg-blue-500 transition text-white px-2 py-1 rounded-md font-bold hover:bg-blue-600 cursor-pointer"
+              >
+                New Folder
+              </button>
+            </form>
+          </div>
+        </div>
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+          <% folders.forEach((folder) => { %>
+          <div class="bg-white rounded-md"><%= folder.name %></div>
+          <% }) %> <% files.forEach((file) => { %>
+          <div class="bg-white rounded-md">
+            <div class="flex flex-col justify-center items-center p-4">
+              <img src="/images/file.png" alt="file" class="w-16 h-16 mb-2" />
+              <p><%= file.name %></p>
+            </div>
+          </div>
+          <% }) %>
+        </div>
+      </div>
     </div>
   </body>
 </html>

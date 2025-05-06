@@ -8,7 +8,6 @@ const prisma = new PrismaClient();
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
-const { nextTick } = require("node:process");
 
 const app = express();
 app.set("views", path.join(__dirname, "views"));
@@ -140,9 +139,26 @@ function ensureAuthenticated(req, res, next) {
 }
 
 app.get("/home", ensureAuthenticated, async (req, res) => {
-  res.render("home", {
-    title: "File Uploader",
-  });
+  try {
+    const folders = await prisma.folder.findMany({
+      where: { parentId: null },
+    });
+    const files = await prisma.file.findMany({
+      where: {
+        folderId: null,
+      },
+    });
+    res.render("home", {
+      title: "File Uploader",
+      newFolder: false,
+      newFile: false,
+      folders,
+      files,
+    });
+  } catch (err) {
+    console.error(err);
+    res.redirect("/");
+  }
 });
 
 app.get("/log-out", (req, res, next) => {
@@ -152,6 +168,35 @@ app.get("/log-out", (req, res, next) => {
     }
     res.redirect("/");
   });
+});
+
+app.get("/:parentName/new-folder", ensureAuthenticated, (req, res, next) => {
+  res.render("home", {
+    title: "File Uploader",
+    newFolder: true,
+    newFile: false,
+    parentName: req.params.parentName,
+  });
+});
+
+app.post("/:parentName/new-folder", async (req, res) => {
+  try {
+    const parentFolder = await prisma.folder.findUnique({
+      where: {
+        name: req.params.parentName,
+      },
+    });
+    await prisma.folder.create({
+      data: {
+        name: req.body.newFolderName,
+        parentId: parentFolder.id,
+      },
+    });
+    res.redirect(`/${req.params.parentName}`);
+  } catch (err) {
+    console.error(err);
+    res.redirect("/home");
+  }
 });
 
 const PORT = process.env.PORT || 3000;

@@ -138,29 +138,6 @@ function ensureAuthenticated(req, res, next) {
   res.redirect("/");
 }
 
-app.get("/home", ensureAuthenticated, async (req, res) => {
-  try {
-    const folders = await prisma.folder.findMany({
-      where: { parentId: null },
-    });
-    const files = await prisma.file.findMany({
-      where: {
-        folderId: null,
-      },
-    });
-    res.render("home", {
-      title: "File Uploader",
-      newFolder: false,
-      newFile: false,
-      folders,
-      files,
-    });
-  } catch (err) {
-    console.error(err);
-    res.redirect("/");
-  }
-});
-
 app.get("/log-out", (req, res, next) => {
   req.logout((err) => {
     if (err) {
@@ -170,34 +147,116 @@ app.get("/log-out", (req, res, next) => {
   });
 });
 
-app.get("/:parentName/new-folder", ensureAuthenticated, (req, res, next) => {
-  res.render("home", {
-    title: "File Uploader",
-    newFolder: true,
-    newFile: false,
-    parentName: req.params.parentName,
-  });
+app.get("/home", ensureAuthenticated, async (req, res) => {
+  try {
+    const folders = await prisma.folder.findMany();
+    res.render("home", {
+      title: "File Uploader",
+      folders,
+      error: null,
+      newFolder: false,
+    });
+  } catch (err) {
+    console.error(err);
+    res.redirect("/");
+  }
 });
 
-app.post("/:parentName/new-folder", async (req, res) => {
+app.post("/home", ensureAuthenticated, async (req, res) => {
   try {
-    const parentFolder = await prisma.folder.findUnique({
+    const existingFolder = await prisma.folder.findFirst({
       where: {
-        name: req.params.parentName,
+        name: req.body.folderName,
       },
     });
+
+    if (existingFolder) {
+      return res.render("home", {
+        title: "File Uploader",
+        error: "Folder name already exists. Please try again.",
+      });
+    }
+
     await prisma.folder.create({
       data: {
-        name: req.body.newFolderName,
-        parentId: parentFolder.id,
+        name: req.body.folderName,
       },
     });
-    res.redirect(`/${req.params.parentName}`);
+    res.redirect("/home");
   } catch (err) {
     console.error(err);
     res.redirect("/home");
   }
 });
+
+app.get("/new-folder", ensureAuthenticated, async (req, res, next) => {
+  const folders = await prisma.folder.findMany();
+
+  res.render("home", {
+    title: "File Uploader",
+    error: null,
+    folders,
+    newFolder: true,
+  });
+});
+
+app.get("/home/:folderName", ensureAuthenticated, async (req, res) => {
+  try {
+    const folder = await prisma.folder.findUnique({
+      where: {
+        name: req.params.folderName,
+      }
+    });
+
+    const folderName = folder.name;
+
+    const files = await prisma.file.findMany({
+      where: {
+        folderId: folder.id,
+      }
+    });
+
+    res.render("folder", {
+      title: "File Uploader",
+      folderName,
+      files,
+      error: null,
+    })
+  } catch (err)  {
+    console.logerror(err);
+    res.redirect('/home')
+  }
+})
+
+app.get("/home/:folderName/upload-file", ensureAuthenticated, (req, res) => {
+  const folderName = req.params.folderName;
+
+  res.render("upload-file", {
+    title: "File Uploader",
+    folderName,
+    error: null,
+  })
+})
+
+// app.post("/:parentName/new-folder", async (req, res) => {
+//   try {
+//     const parentFolder = await prisma.folder.findUnique({
+//       where: {
+//         name: req.params.parentName,
+//       },
+//     });
+//     await prisma.folder.create({
+//       data: {
+//         name: req.body.newFolderName,
+//         parentId: parentFolder.id,
+//       },
+//     });
+//     res.redirect(`/${req.params.parentName}`);
+//   } catch (err) {
+//     console.error(err);
+//     res.redirect("/home");
+//   }
+// });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -28,18 +28,17 @@ model User {
 }
 
 model Folder {
-  id       String   @id @default(uuid())
-  name     String   @unique
-  parentId String?
-  parent   Folder?  @relation("FolderParent", fields: [parentId], references: [id])
-  children Folder[] @relation("FolderParent")
-  files    File[]
+  id    String @id @default(uuid())
+  name  String @unique
+  files File[]
 }
 
 model File {
-  id       String  @id @default(uuid())
-  name     String
-  fileUrl  String
-  folderId String?
-  folder   Folder? @relation(fields: [folderId], references: [id])
+  id         String   @id @default(uuid())
+  name       String   @unique
+  size       Int
+  uploadedAt DateTime @default(now())
+  fileUrl    String
+  folderId   String?
+  folder     Folder?  @relation(fields: [folderId], references: [id])
 }

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/output.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css"
+    />
+    <title><%= title %></title>
+  </head>
+  <body>
+    <div class="min-h-dvh flex flex-col bg-gray-300 gap-8">
+      <nav class="flex justify-between items-center bg-white p-6">
+        <h1 class="text-2xl">My Drive</h1>
+        <form action="/log-out" method="GET">
+          <button
+            type="submit"
+            class="bg-blue-500 transition text-white px-2 py-1 rounded-md font-bold hover:bg-blue-600 cursor-pointer"
+          >
+            Log out
+          </button>
+        </form>
+      </nav>
+      <div class="p-6 flex flex-col gap-6">
+        <div class="flex justify-between items-center bg-white rounded-md p-6">
+          <h2 class="text-xl">Home / <%= folderName %> /</h2>
+          <div class="flex gap-2 justify-center items-center">
+            <form action="/home/<%= folderName %>/upload-file" method="GET">
+              <button
+                class="bg-blue-500 transition text-white px-2 py-1 rounded-md font-bold hover:bg-blue-600 cursor-pointer"
+              >
+                Upload File
+              </button>
+            </form>
+            <form action="/home/<%= folderName %>/rename-folder" method="POST">
+              <button
+                class="bg-blue-500 transition text-white px-2 py-1 rounded-md font-bold hover:bg-blue-600 cursor-pointer"
+              >
+                Rename Folder
+              </button>
+            </form>
+            <form action="/home/<%= folderName %>/delete-folder" method="POST">
+              <button
+                class="bg-red-500 transition text-white px-2 py-1 rounded-md font-bold hover:bg-red-900 cursor-pointer"
+              >
+                Delete Folder
+              </button>
+            </form>
+          </div>
+        </div>
+        <div class="gap-4 flex flex-wrap justify-start items-center">
+          <% files.forEach((file) => { %>
+          <!-- <form action="/home/<%= folderName %>" method="GET"> -->
+          <button
+            type="submit"
+            class="bg-white rounded-md px-2 py-1 flex gap-2 justify-between items-center hover:-translate-y-1 transition cursor-pointer"
+          >
+            <span class="mdi mdi-file"></span>
+            <%= file.name %>
+          </button>
+          <!-- </form> -->
+          <% }) %>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

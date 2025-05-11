@@ -292,6 +292,25 @@ app.post(
   }
 );
 
+app.post(
+  "/home/:folderName/delete-folder",
+  ensureAuthenticated,
+  async (req, res) => {
+    try {
+      const folderName = req.params.folderName;
+      await prisma.folder.delete({
+        where: {
+          name: folderName,
+        },
+      });
+      res.redirect("/home");
+    } catch (err) {
+      console.error(err);
+      res.redirect("/home/:folderName/");
+    }
+  }
+);
+
 // app.post("/:parentName/new-folder", async (req, res) => {
 //   try {
 //     const parentFolder = await prisma.folder.findUnique({

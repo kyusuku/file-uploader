@@ -205,7 +205,7 @@ app.get("/home/:folderName", ensureAuthenticated, async (req, res) => {
     const folder = await prisma.folder.findUnique({
       where: {
         name: req.params.folderName,
-      }
+      },
     });
 
     const folderName = folder.name;
@@ -213,7 +213,7 @@ app.get("/home/:folderName", ensureAuthenticated, async (req, res) => {
     const files = await prisma.file.findMany({
       where: {
         folderId: folder.id,
-      }
+      },
     });
 
     res.render("folder", {
@@ -221,12 +221,12 @@ app.get("/home/:folderName", ensureAuthenticated, async (req, res) => {
       folderName,
       files,
       error: null,
-    })
-  } catch (err)  {
-    console.logerror(err);
-    res.redirect('/home')
+    });
+  } catch (err) {
+    console.error(err);
+    res.redirect("/home");
   }
-})
+});
 
 app.get("/home/:folderName/upload-file", ensureAuthenticated, (req, res) => {
   const folderName = req.params.folderName;
@@ -235,8 +235,62 @@ app.get("/home/:folderName/upload-file", ensureAuthenticated, (req, res) => {
     title: "File Uploader",
     folderName,
     error: null,
-  })
-})
+  });
+});
+
+app.get("/home/:folderName/rename-folder", ensureAuthenticated, (req, res) => {
+  try {
+    const folderName = req.params.folderName;
+
+    res.render("folder", {
+      title: "File Uploader",
+      folderName,
+      error: null,
+      renameFolder: true,
+    });
+  } catch (err) {
+    console.error(err);
+    res.redirect("/home/:folderName/");
+  }
+});
+
+app.post(
+  "/home/:folderName/rename-folder",
+  ensureAuthenticated,
+  async (req, res) => {
+    try {
+      const folderName = req.params.folderName;
+      const newFolderName = req.body.folderName;
+      const existingFolder = await prisma.folder.findFirst({
+        where: {
+          name: newFolderName,
+        },
+      });
+
+      if (existingFolder) {
+        return res.render("folder", {
+          title: "File Uploader",
+          folderName,
+          error: "Folder name already exists. Please try again.",
+        });
+      }
+
+      await prisma.folder.update({
+        where: {
+          name: folderName,
+        },
+        data: {
+          name: newFolderName,
+        },
+      });
+
+      res.redirect(`/home/${newFolderName}`);
+    } catch (err) {
+      console.error(err);
+      res.redirect("/home/:folderName/");
+    }
+  }
+);
 
 // app.post("/:parentName/new-folder", async (req, res) => {
 //   try {

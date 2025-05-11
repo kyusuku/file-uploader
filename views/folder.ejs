@@ -11,6 +11,42 @@
     <title><%= title %></title>
   </head>
   <body>
+    <% if (locals.renameFolder) { %>
+    <div
+      class="fixed inset-0 bg-gray-300 bg-opacity-10 z-40 flex justify-center items-center"
+    >
+      <form
+        action="/home/<%= folderName %>/rename-folder"
+        method="POST"
+        class="bg-white rounded-md flex flex-col self-center gap-4 p-6"
+      >
+        <div class="flex flex-col">
+          <label for="folderName">New Folder Name</label>
+          <input
+            type="text"
+            id="folderName"
+            name="folderName"
+            class="border-gray-600 border-1 rounded-md px-2 py-1"
+          />
+        </div>
+        <div class="flex justify-between items-center">
+          <button
+            type="button"
+            onclick="window.location.href='/home/<%= folderName %>/';"
+            class="bg-red-500 transition text-white px-2 py-1 rounded-md font-bold hover:bg-red-700 cursor-pointer w-[80px]"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="bg-blue-500 transition text-white px-2 py-1 rounded-md font-bold hover:bg-blue-600 cursor-pointer w-[80px]"
+          >
+            Confirm
+          </button>
+        </div>
+      </form>
+    </div>
+    <% } %>
     <div class="min-h-dvh flex flex-col bg-gray-300 gap-8">
       <nav class="flex justify-between items-center bg-white p-6">
         <h1 class="text-2xl">My Drive</h1>
@@ -34,7 +70,7 @@
                 Upload File
               </button>
             </form>
-            <form action="/home/<%= folderName %>/rename-folder" method="POST">
+            <form action="/home/<%= folderName %>/rename-folder" method="GET">
               <button
                 class="bg-blue-500 transition text-white px-2 py-1 rounded-md font-bold hover:bg-blue-600 cursor-pointer"
               >
@@ -51,7 +87,7 @@
           </div>
         </div>
         <div class="gap-4 flex flex-wrap justify-start items-center">
-          <% files.forEach((file) => { %>
+          <% if (locals.files) { %> <% files.forEach((file) => { %>
           <!-- <form action="/home/<%= folderName %>" method="GET"> -->
           <button
             type="submit"
@@ -61,7 +97,7 @@
             <%= file.name %>
           </button>
           <!-- </form> -->
-          <% }) %>
+          <% }) %> <% } %>
         </div>
       </div>
     </div>

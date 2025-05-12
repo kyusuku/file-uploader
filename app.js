@@ -8,6 +8,9 @@ const prisma = new PrismaClient();
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
+const multer = require('multer');
+const upload = multer({ dest: './uploads/' });
+const fs = require('fs');
 
 const app = express();
 app.set("views", path.join(__dirname, "views"));
@@ -231,12 +234,61 @@ app.get("/home/:folderName", ensureAuthenticated, async (req, res) => {
 app.get("/home/:folderName/upload-file", ensureAuthenticated, (req, res) => {
   const folderName = req.params.folderName;
 
-  res.render("upload-file", {
+  res.render("folder", {
     title: "File Uploader",
     folderName,
     error: null,
+    uploadFile: true,
   });
 });
+
+app.post('/home/:folderName/upload-file', ensureAuthenticated, upload.single('uploaded-file'), async (req, res) => {
+  const folder = await prisma.folder.findUnique({
+    where: {
+      name: req.params.folderName,
+    }
+  })
+  
+  const file = req.file;
+  const fileData = fs.readFileSync(file.path);
+
+  const fileName = req.body.fileName;
+  const filePath = file.path;
+  const fileSize = file.size;
+  const folderId = folder.id;
+
+  await prisma.file.create({
+    data: {
+      name: fileName,
+      size: fileSize,
+      fileUrl: filePath,
+      data: fileData,
+      folderId,
+    }
+  })
+
+  fs.unlinkSync(file.path);
+
+  res.redirect(`/home/${folder.name}`);
+})
+
+app.get('/home/:folderName/:fileName/download', ensureAuthenticated, async (req, res) => {
+  const fileName = req.params.fileName;
+
+  const file = await prisma.file.findUnique({
+    where: {
+      name: fileName,
+    }
+  });
+
+  if (!file) {
+    return res.status(404).send('File not found');
+  }
+
+  res.set('Content-Disposition', `attachment; filename="${file.name}"`);
+  res.set('Content-Type', 'application/octet-stream');
+  res.send(file.data);
+})
 
 app.get("/home/:folderName/rename-folder", ensureAuthenticated, (req, res) => {
   try {
@@ -298,6 +350,35 @@ app.post(
   async (req, res) => {
     try {
       const folderName = req.params.folderName;
+
+      const folder = await prisma.folder.findUnique({
+        where: {
+          name: folderName,
+        }
+      })
+
+      const files = await prisma.file.findMany({
+        where: {
+          folderId: folder.id,
+        }
+      })
+
+      for (const file of files) {
+        try {
+          if (fs.existsSync(file.fileUrl)) {
+            fs.unlinkSync(file.fileUrl);
+          } 
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      await prisma.file.deleteMany({
+        where: {
+          folderId: folder.id,
+        }
+      })
+
       await prisma.folder.delete({
         where: {
           name: folderName,
@@ -311,25 +392,25 @@ app.post(
   }
 );
 
-// app.post("/:parentName/new-folder", async (req, res) => {
-//   try {
-//     const parentFolder = await prisma.folder.findUnique({
-//       where: {
-//         name: req.params.parentName,
-//       },
-//     });
-//     await prisma.folder.create({
-//       data: {
-//         name: req.body.newFolderName,
-//         parentId: parentFolder.id,
-//       },
-//     });
-//     res.redirect(`/${req.params.parentName}`);
-//   } catch (err) {
-//     console.error(err);
-//     res.redirect("/home");
-//   }
-// });
+app.get('/home/:folderName/:fileName', ensureAuthenticated, async (req, res) => {
+  const folderName = req.params.folderName;
+  const fileName = req.params.fileName;
+
+  const file = await prisma.file.findUnique({
+    where: {
+      name: fileName,
+    }
+  });
+
+  res.render('folder', {
+    title: 'File Uploader',
+    folderName,
+    fileName,
+    file,
+    error: null,
+    seeFileDetail: true,
+  })
+})
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

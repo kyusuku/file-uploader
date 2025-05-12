@@ -39,6 +39,7 @@ model File {
   size       Int
   uploadedAt DateTime @default(now())
   fileUrl    String
+  data       Bytes?
   folderId   String?
   folder     Folder?  @relation(fields: [folderId], references: [id])
 }

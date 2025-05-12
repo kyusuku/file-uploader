@@ -11,7 +11,84 @@
     <title><%= title %></title>
   </head>
   <body>
-    <% if (locals.renameFolder) { %>
+    <% if (locals.uploadFile) { %>
+    <div
+      class="fixed inset-0 bg-gray-300 bg-opacity-10 z-40 flex justify-center items-center"
+    >
+      <form
+        action="/home/<%= folderName %>/upload-file"
+        enctype="multipart/form-data"
+        method="POST"
+        class="bg-white rounded-md flex flex-col self-center gap-4 p-6"
+      >
+        <div class="flex flex-col">
+          <label for="fileName">File Name</label>
+          <input
+            type="text"
+            id="fileName"
+            name="fileName"
+            class="border-gray-600 border-1 rounded-md px-2 py-1"
+            required
+          />
+        </div>
+        <input
+          type="file"
+          id="uploaded-file"
+          name="uploaded-file"
+          class="border-gray-600 border-1 rounded-md px-2 py-1 hover:cursor-pointer"
+        />
+        <div class="flex justify-between items-center">
+          <button
+            type="button"
+            onclick="window.location.href='/home/<%= folderName %>/';"
+            class="bg-red-500 transition text-white px-2 py-1 rounded-md font-bold hover:bg-red-700 cursor-pointer w-[80px]"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="bg-blue-500 transition text-white px-2 py-1 rounded-md font-bold hover:bg-blue-600 cursor-pointer w-[80px]"
+          >
+            Confirm
+          </button>
+        </div>
+      </form>
+    </div>
+    <% } %> <% if (locals.seeFileDetail) { %>
+    <div
+      class="fixed inset-0 bg-gray-300 bg-opacity-10 z-40 flex justify-center items-center"
+    >
+      <div
+        class="bg-white rounded-md flex flex-col self-center justify-center items-center gap-8 p-6"
+      >
+        <h1 class="text-3xl">File Details</h1>
+        <div class="flex flex-col gap-4">
+          <h2>Name: <%= fileName %></h2>
+          <h2>Size: <%= Math.round(file.size/1000 * 10) / 10 %> KB</h2>
+          <h2>Uploaded on: <%= file.uploadedAt.toDateString() %></h2>
+        </div>
+        <div class="flex justify-between items-center gap-8">
+          <button
+            type="button"
+            onclick="window.location.href='/home/<%= folderName %>/';"
+            class="bg-red-500 transition text-white px-2 py-1 rounded-md font-bold hover:bg-red-700 cursor-pointer w-[100px]"
+          >
+            Exit
+          </button>
+          <form action="/home/<%= folderName %>/<%= fileName %>/download" method="GET">
+            <button
+              type="submit"
+              onclick=""
+              class="bg-blue-500 transition text-white px-2 py-1 rounded-md font-bold hover:bg-blue-700 cursor-pointer w-[100px]"
+            >
+              Download
+            </button>
+          </form>
+            
+        </div>
+      </div>
+    </div>
+    <% } %> <% if (locals.renameFolder) { %>
     <div
       class="fixed inset-0 bg-gray-300 bg-opacity-10 z-40 flex justify-center items-center"
     >
@@ -88,15 +165,15 @@
         </div>
         <div class="gap-4 flex flex-wrap justify-start items-center">
           <% if (locals.files) { %> <% files.forEach((file) => { %>
-          <!-- <form action="/home/<%= folderName %>" method="GET"> -->
-          <button
-            type="submit"
-            class="bg-white rounded-md px-2 py-1 flex gap-2 justify-between items-center hover:-translate-y-1 transition cursor-pointer"
-          >
-            <span class="mdi mdi-file"></span>
-            <%= file.name %>
-          </button>
-          <!-- </form> -->
+          <form action="/home/<%= folderName %>/<%= file.name %>" method="GET">
+            <button
+              type="submit"
+              class="bg-white rounded-md px-2 py-1 flex gap-2 justify-between items-center hover:-translate-y-1 transition cursor-pointer"
+            >
+              <span class="mdi mdi-file"></span>
+              <%= file.name %>
+            </button>
+          </form>
           <% }) %> <% } %>
         </div>
       </div>

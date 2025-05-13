@@ -152,7 +152,11 @@ app.get("/log-out", (req, res, next) => {
 
 app.get("/home", ensureAuthenticated, async (req, res) => {
   try {
-    const folders = await prisma.folder.findMany();
+    const folders = await prisma.folder.findMany({
+      where: {
+        userId: req.user.id,
+      }
+    });
     res.render("home", {
       title: "File Uploader",
       folders,
@@ -170,6 +174,7 @@ app.post("/home", ensureAuthenticated, async (req, res) => {
     const existingFolder = await prisma.folder.findFirst({
       where: {
         name: req.body.folderName,
+        userId: req.user.id,
       },
     });
 
@@ -183,6 +188,7 @@ app.post("/home", ensureAuthenticated, async (req, res) => {
     await prisma.folder.create({
       data: {
         name: req.body.folderName,
+        userId: req.user.id,
       },
     });
     res.redirect("/home");
@@ -193,7 +199,11 @@ app.post("/home", ensureAuthenticated, async (req, res) => {
 });
 
 app.get("/new-folder", ensureAuthenticated, async (req, res, next) => {
-  const folders = await prisma.folder.findMany();
+  const folders = await prisma.folder.findMany({
+    where: {
+      userId: req.user.id,
+    },
+  });
 
   res.render("home", {
     title: "File Uploader",
@@ -205,9 +215,10 @@ app.get("/new-folder", ensureAuthenticated, async (req, res, next) => {
 
 app.get("/home/:folderName", ensureAuthenticated, async (req, res) => {
   try {
-    const folder = await prisma.folder.findUnique({
+    const folder = await prisma.folder.findFirst({
       where: {
         name: req.params.folderName,
+        userId: req.user.id,
       },
     });
 
@@ -216,6 +227,7 @@ app.get("/home/:folderName", ensureAuthenticated, async (req, res) => {
     const files = await prisma.file.findMany({
       where: {
         folderId: folder.id,
+        userId: req.user.id,
       },
     });
 
@@ -243,9 +255,10 @@ app.get("/home/:folderName/upload-file", ensureAuthenticated, (req, res) => {
 });
 
 app.post('/home/:folderName/upload-file', ensureAuthenticated, upload.single('uploaded-file'), async (req, res) => {
-  const folder = await prisma.folder.findUnique({
+  const folder = await prisma.folder.findFirst({
     where: {
       name: req.params.folderName,
+      userId: req.user.id,
     }
   })
   
@@ -264,6 +277,7 @@ app.post('/home/:folderName/upload-file', ensureAuthenticated, upload.single('up
       fileUrl: filePath,
       data: fileData,
       folderId,
+      userId: req.user.id,
     }
   })
 
@@ -275,9 +289,10 @@ app.post('/home/:folderName/upload-file', ensureAuthenticated, upload.single('up
 app.get('/home/:folderName/:fileName/download', ensureAuthenticated, async (req, res) => {
   const fileName = req.params.fileName;
 
-  const file = await prisma.file.findUnique({
+  const file = await prisma.file.findFirst({
     where: {
       name: fileName,
+      userId: req.user.id,
     }
   });
 
@@ -316,6 +331,7 @@ app.post(
       const existingFolder = await prisma.folder.findFirst({
         where: {
           name: newFolderName,
+          userId: req.user.id,
         },
       });
 
@@ -330,6 +346,7 @@ app.post(
       await prisma.folder.update({
         where: {
           name: folderName,
+          userId: req.user.id,
         },
         data: {
           name: newFolderName,
@@ -351,15 +368,17 @@ app.post(
     try {
       const folderName = req.params.folderName;
 
-      const folder = await prisma.folder.findUnique({
+      const folder = await prisma.folder.findFirst({
         where: {
           name: folderName,
+          userId: req.user.id,
         }
       })
 
       const files = await prisma.file.findMany({
         where: {
           folderId: folder.id,
+          userId: req.user.id,
         }
       })
 
@@ -376,12 +395,14 @@ app.post(
       await prisma.file.deleteMany({
         where: {
           folderId: folder.id,
+          userId: req.user.id,
         }
       })
 
       await prisma.folder.delete({
         where: {
           name: folderName,
+          userId: req.user.id,
         },
       });
       res.redirect("/home");
@@ -396,9 +417,10 @@ app.get('/home/:folderName/:fileName', ensureAuthenticated, async (req, res) => 
   const folderName = req.params.folderName;
   const fileName = req.params.fileName;
 
-  const file = await prisma.file.findUnique({
+  const file = await prisma.file.findFirst({
     where: {
       name: fileName,
+      userId: req.user.id,
     }
   });
 

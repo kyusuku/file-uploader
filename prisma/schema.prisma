@@ -22,24 +22,34 @@ model Session {
 }
 
 model User {
-  id       String @id @default(uuid())
-  username String @unique @db.VarChar(255)
-  password String @db.VarChar(255)
+  id       String   @id @default(uuid())
+  username String   @unique @db.VarChar(255)
+  password String   @db.VarChar(255)
+  folder   Folder[]
+  file     File[]
 }
 
 model Folder {
-  id    String @id @default(uuid())
-  name  String @unique
-  files File[]
+  id     String  @id @default(uuid())
+  name   String
+  files  File[]
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  @@unique([name, userId])
 }
 
 model File {
   id         String   @id @default(uuid())
-  name       String   @unique
+  name       String   
   size       Int
   uploadedAt DateTime @default(now())
   fileUrl    String
   data       Bytes?
   folderId   String?
   folder     Folder?  @relation(fields: [folderId], references: [id])
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+
+  @@unique([name, userId])
 }

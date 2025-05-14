@@ -269,6 +269,7 @@ app.post('/home/:folderName/upload-file', ensureAuthenticated, upload.single('up
   const filePath = file.path;
   const fileSize = file.size;
   const folderId = folder.id;
+  const mimeType = file.mimetype;
 
   await prisma.file.create({
     data: {
@@ -276,6 +277,7 @@ app.post('/home/:folderName/upload-file', ensureAuthenticated, upload.single('up
       size: fileSize,
       fileUrl: filePath,
       data: fileData,
+      mimeType,
       folderId,
       userId: req.user.id,
     }
@@ -301,7 +303,7 @@ app.get('/home/:folderName/:fileName/download', ensureAuthenticated, async (req,
   }
 
   res.set('Content-Disposition', `attachment; filename="${file.name}"`);
-  res.set('Content-Type', 'application/octet-stream');
+  res.set('Content-Type', file.mimeType || 'application/octet-stream');
   res.send(file.data);
 })
 

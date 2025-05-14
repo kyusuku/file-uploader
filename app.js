@@ -173,8 +173,10 @@ app.post("/home", ensureAuthenticated, async (req, res) => {
   try {
     const existingFolder = await prisma.folder.findFirst({
       where: {
-        name: req.body.folderName,
-        userId: req.user.id,
+        name_userId: {
+          name: req.body.folderName,
+          userId: req.user.id,
+        }
       },
     });
 
@@ -215,14 +217,16 @@ app.get("/new-folder", ensureAuthenticated, async (req, res, next) => {
 
 app.get("/home/:folderName", ensureAuthenticated, async (req, res) => {
   try {
+    const folderName = req.params.folderName;
+
     const folder = await prisma.folder.findFirst({
       where: {
-        name: req.params.folderName,
-        userId: req.user.id,
+        name_userId: {
+          name: folderName,
+          userId: req.user.id,
+        }
       },
     });
-
-    const folderName = folder.name;
 
     const files = await prisma.file.findMany({
       where: {
@@ -257,8 +261,10 @@ app.get("/home/:folderName/upload-file", ensureAuthenticated, (req, res) => {
 app.post('/home/:folderName/upload-file', ensureAuthenticated, upload.single('uploaded-file'), async (req, res) => {
   const folder = await prisma.folder.findFirst({
     where: {
-      name: req.params.folderName,
-      userId: req.user.id,
+      name_userId: {
+        name: req.params.folderName,
+        userId: req.user.id,
+      }
     }
   })
   
@@ -270,10 +276,11 @@ app.post('/home/:folderName/upload-file', ensureAuthenticated, upload.single('up
   const fileSize = file.size;
   const folderId = folder.id;
   const mimeType = file.mimetype;
+  const originalName = file.originalname;
 
   await prisma.file.create({
     data: {
-      name: fileName,
+      name: originalName,
       size: fileSize,
       fileUrl: filePath,
       data: fileData,
@@ -332,8 +339,10 @@ app.post(
       const newFolderName = req.body.folderName;
       const existingFolder = await prisma.folder.findFirst({
         where: {
-          name: newFolderName,
-          userId: req.user.id,
+          name_userId: {
+            name: newFolderName,
+            userId: req.user.id,
+          }
         },
       });
 
@@ -347,8 +356,10 @@ app.post(
 
       await prisma.folder.update({
         where: {
-          name: folderName,
-          userId: req.user.id,
+          name_userId: {
+            name: folderName,
+            userId: req.user.id,
+          }
         },
         data: {
           name: newFolderName,
@@ -372,8 +383,10 @@ app.post(
 
       const folder = await prisma.folder.findFirst({
         where: {
-          name: folderName,
-          userId: req.user.id,
+          name_userId: {
+            name: folderName,
+            userId: req.user.id,
+          }
         }
       })
 
@@ -403,8 +416,10 @@ app.post(
 
       await prisma.folder.delete({
         where: {
-          name: folderName,
-          userId: req.user.id,
+          name_userId: {
+            name: folderName,
+            userId: req.user.id,
+          }
         },
       });
       res.redirect("/home");

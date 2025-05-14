@@ -173,10 +173,8 @@ app.post("/home", ensureAuthenticated, async (req, res) => {
   try {
     const existingFolder = await prisma.folder.findFirst({
       where: {
-        name_userId: {
-          name: req.body.folderName,
-          userId: req.user.id,
-        }
+        name: req.body.folderName,
+        userId: req.user.id,
       },
     });
 
@@ -221,10 +219,8 @@ app.get("/home/:folderName", ensureAuthenticated, async (req, res) => {
 
     const folder = await prisma.folder.findFirst({
       where: {
-        name_userId: {
-          name: folderName,
-          userId: req.user.id,
-        }
+        name: folderName,
+        userId: req.user.id,
       },
     });
 
@@ -261,10 +257,8 @@ app.get("/home/:folderName/upload-file", ensureAuthenticated, (req, res) => {
 app.post('/home/:folderName/upload-file', ensureAuthenticated, upload.single('uploaded-file'), async (req, res) => {
   const folder = await prisma.folder.findFirst({
     where: {
-      name_userId: {
-        name: req.params.folderName,
-        userId: req.user.id,
-      }
+      name: req.params.folderName,
+      userId: req.user.id,
     }
   })
   
@@ -339,10 +333,8 @@ app.post(
       const newFolderName = req.body.folderName;
       const existingFolder = await prisma.folder.findFirst({
         where: {
-          name_userId: {
-            name: newFolderName,
-            userId: req.user.id,
-          }
+          name: newFolderName,
+          userId: req.user.id,
         },
       });
 
@@ -383,10 +375,8 @@ app.post(
 
       const folder = await prisma.folder.findFirst({
         where: {
-          name_userId: {
-            name: folderName,
-            userId: req.user.id,
-          }
+          name: folderName,
+          userId: req.user.id,
         }
       })
 

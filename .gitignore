@@ -1,4 +1,5 @@
-generated/prisma/
+prisma/migrations
+uploads
 
 # Logs
 logs
